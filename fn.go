@@ -2,6 +2,7 @@ package java
 
 import (
 	"errors"
+	"github.com/aadog/go-jni"
 	"github.com/samber/mo"
 )
 
