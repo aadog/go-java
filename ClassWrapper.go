@@ -4,6 +4,7 @@ import "C"
 import (
 	"errors"
 	"fmt"
+	"github.com/aadog/go-jni"
 	"github.com/samber/lo"
 	"github.com/samber/mo"
 	"strings"

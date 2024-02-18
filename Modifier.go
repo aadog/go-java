@@ -1,6 +1,7 @@
 package java
 
 import (
+	"github.com/aadog/go-jni"
 	"github.com/samber/mo"
 )
 

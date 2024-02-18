@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"github.com/aadog/go-ffi"
+	"github.com/aadog/go-gumjs"
 	"github.com/aadog/go-jni"
 	"github.com/samber/lo"
 	"unsafe"

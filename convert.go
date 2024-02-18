@@ -3,6 +3,7 @@ package java
 import (
 	"errors"
 	"fmt"
+	"github.com/aadog/go-jni"
 	"github.com/samber/lo"
 	"reflect"
 	"strings"
