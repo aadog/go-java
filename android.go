@@ -7,8 +7,6 @@ import (
 	"github.com/aadog/go-jni"
 	"github.com/samber/lo"
 	"github.com/samber/mo"
-	"runtime"
-	"syscall"
 	"unsafe"
 )
 
@@ -57,19 +55,6 @@ func (a AndroidStruct) InitWithArtFind() mo.Result[struct{}] {
 	//Android.init()
 	return mo.Ok(struct{}{})
 }
-func (a AndroidStruct) Perform(fn func()) chan struct{} {
-	done := make(chan struct{})
-	go func() {
-		runtime.LockOSThread()
-		SetLocalThreadJavaEnv()
-		defer RemoveLocalThreadJavaEnv()
-		LogInfo("Go", "start thread 线程id:%v", syscall.Gettid())
-		fn()
-		done <- struct{}{}
-	}()
-	return done
-}
-
 func (a AndroidStruct) init() {
 	//a.PatchGlobalRef()
 }
