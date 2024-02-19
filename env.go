@@ -49,7 +49,6 @@ func SetLocalThreadJavaEnv() {
 	Envs.Store(threadID, env)
 }
 func RemoveLocalThreadJavaEnv() {
-	LogInfo("Go", "线程结束:%v", "111")
 	threadID := CurrentThreadID()
 	Envs.Delete(threadID)
 	Android.Jvm.DetachCurrentThread()
