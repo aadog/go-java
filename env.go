@@ -52,7 +52,6 @@ func RemoveLocalThreadJavaEnv() {
 	threadID := CurrentThreadID()
 	Envs.Delete(threadID)
 	Android.Jvm.DetachCurrentThread()
-	LogInfo("Go", "线程结束:%v", threadID)
 }
 
 var ClassWrapperCacheMap = sync.Map{}
