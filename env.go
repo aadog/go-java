@@ -72,9 +72,9 @@ func Use(className string) mo.Result[*ClassWrapper] {
 
 	if lo.Contains(PrimitiveClasss, className) {
 		var err error
-		LogError("Go", "查找:%v", className)
+		//LogError("Go", "查找:%v", className)
 		cls, err = GetPrimitiveClass(className).Get()
-		LogError("Go", "查找结果:%v", cls)
+		//LogError("Go", "查找结果:%v", cls)
 		if err != nil {
 			return mo.Errf[*ClassWrapper]("find class error:%v", err)
 		}
