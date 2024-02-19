@@ -38,7 +38,6 @@ func LocalThreadJavaEnv() jni.Env {
 	return env.(jni.Env)
 }
 func SetLocalThreadJavaEnv() {
-	LogInfo("Go", "当前jvm:%v", Jvm)
 	env, ret := Android.Jvm.AttachCurrentThread()
 	if ret != 0 {
 		panic(errors.New("attach current thread error"))
