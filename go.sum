@@ -2,6 +2,8 @@ github.com/aadog/go-ffi v0.0.0-20240218110600-29363d58f360 h1:jWVk4Iedkpay+cKOFP
 github.com/aadog/go-ffi v0.0.0-20240218110600-29363d58f360/go.mod h1:NJrrO8+y8tVFwcqdf53o2+98vYnfDHiVc6h98PEBxkk=
 github.com/aadog/go-gumjs v0.0.0-20240218133839-de56c44db3db h1:OeyMnRaLs5qRFbIe23RU4IkKyC5hAgxD9l5IwbZRGaI=
 github.com/aadog/go-gumjs v0.0.0-20240218133839-de56c44db3db/go.mod h1:vmADBKV2TTzsE9+ZTb3Mu3DH95QGw601e294VEPsn20=
+github.com/aadog/go-gumjs v0.0.0-20240220064212-eb3904c7cd92 h1:TYXcS52z+DKCsA7L+I6eV1DEXnhGqSMsaOSqF0Hv48U=
+github.com/aadog/go-gumjs v0.0.0-20240220064212-eb3904c7cd92/go.mod h1:vmADBKV2TTzsE9+ZTb3Mu3DH95QGw601e294VEPsn20=
 github.com/aadog/go-jni v0.0.0-20240218151408-f28622c377d1 h1:C0TdMt2w/DwtV7o4EipHhJR9yej5HbvygtBCoCGj4FI=
 github.com/aadog/go-jni v0.0.0-20240218151408-f28622c377d1/go.mod h1:lDqzULor5VVOnnxEoxFgl4NCx6EgmkllwIg/9Lo+jDs=
 github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
@@ -12,3 +14,5 @@ github.com/samber/mo v1.11.0 h1:ZOiSkrGGpNhVv/1dxP02risztdMTIwE8KSW9OG4k5bY=
 github.com/samber/mo v1.11.0/go.mod h1:BfkrCPuYzVG3ZljnZB783WIJIGk1mcZr9c9CPf8tAxs=
 golang.org/x/exp v0.0.0-20240119083558-1b970713d09a h1:Q8/wZp0KX97QFTc2ywcOE0YRjZPVIx+MXInMzdvQqcA=
 golang.org/x/exp v0.0.0-20240119083558-1b970713d09a/go.mod h1:idGWGoKP1toJGkd5/ig9ZLuPcZBC3ewk7SzmH0uou08=
+golang.org/x/exp v0.0.0-20240222234643-814bf88cf225 h1:LfspQV/FYTatPTr/3HzIcmiUFH7PGP+OQ6mgDYo3yuQ=
+golang.org/x/exp v0.0.0-20240222234643-814bf88cf225/go.mod h1:CxmFvTBINI24O/j8iY7H1xHzx2i4OsyguNBmN/uPtqc=
