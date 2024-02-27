@@ -77,7 +77,9 @@ func ConvertAnyArgToJValueArg(arg any) (jni.Jvalue, bool) {
 		return jni.Jvalue(lo.If(vl.Bool(), 1).Else(0)), false
 	}
 	if tp.Kind() == reflect.Pointer {
-
+		if vl.IsNil() {
+			return jni.Jvalue(0), false
+		}
 		obj, ok := vl.Interface().(IJni)
 		if ok {
 			return jni.Jvalue(obj.JniPtr()), false
