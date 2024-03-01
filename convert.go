@@ -6,27 +6,27 @@ import (
 	"github.com/aadog/go-jni"
 	"github.com/samber/lo"
 	"reflect"
-	"strings"
+	//"strings"
 )
 
-func DeclaredConstructorsToString(items []*JavaLangReflectConstructorObjectWrapper) string {
-	sMethods := strings.Builder{}
-	for _, method := range items {
-		sMethods.WriteString("\n")
-		sMethods.WriteString(method.ToString().OrElse(""))
-		sMethods.WriteString("\n")
-	}
-	return sMethods.String()
-}
-func DeclaredMethodsToString(items []*JavaLangReflectMethodObjectWrapper) string {
-	sMethods := strings.Builder{}
-	for _, method := range items {
-		sMethods.WriteString("\n")
-		sMethods.WriteString(method.ToString().OrElse(""))
-		sMethods.WriteString("\n")
-	}
-	return sMethods.String()
-}
+//func DeclaredConstructorsToString(items []*JavaLangReflectConstructorObjectWrapper) string {
+//	sMethods := strings.Builder{}
+//	for _, method := range items {
+//		sMethods.WriteString("\n")
+//		sMethods.WriteString(method.ToString().OrElse(""))
+//		sMethods.WriteString("\n")
+//	}
+//	return sMethods.String()
+//}
+//func DeclaredMethodsToString(items []*JavaLangReflectMethodObjectWrapper) string {
+//	sMethods := strings.Builder{}
+//	for _, method := range items {
+//		sMethods.WriteString("\n")
+//		sMethods.WriteString(method.ToString().OrElse(""))
+//		sMethods.WriteString("\n")
+//	}
+//	return sMethods.String()
+//}
 
 func ConvertAnyArgToJValueArg(arg any) (jni.Jvalue, bool) {
 	env := LocalThreadJavaEnv()
@@ -77,38 +77,15 @@ func ConvertAnyArgToJValueArg(arg any) (jni.Jvalue, bool) {
 		return jni.Jvalue(lo.If(vl.Bool(), 1).Else(0)), false
 	}
 	if tp.Kind() == reflect.Pointer {
-		if vl.IsNil() {
-			return jni.Jvalue(0), false
-		}
-		obj, ok := vl.Interface().(IJni)
+		obj, ok := vl.Interface().(IJniObject)
 		if ok {
 			return jni.Jvalue(obj.JniPtr()), false
+		} else {
+			panic(errors.New(fmt.Sprintf("error type:%v", vl.Interface())))
 		}
 	}
 	panic(errors.New("convertAnyArgToJValueArg: invalid argument type"))
 	return jValArg, false
-}
-func SumGoArgsType(args ...any) []string {
-	types := make([]string, 0)
-	for _, arg := range args {
-		vl := reflect.ValueOf(arg)
-		tp := vl.Type()
-		if tp.Kind() == reflect.Pointer {
-			obj, ok := vl.Interface().(IJniObject)
-			if ok {
-				clsName, err := obj.ClassName().Get()
-				if err != nil {
-					panic(err)
-				}
-				types = append(types, clsName)
-			} else {
-				panic(errors.New("convert error"))
-			}
-		} else {
-			types = append(types, ConvertGoBaseTypeToJavaBaseType(tp))
-		}
-	}
-	return types
 }
 func ConvertGoBaseTypeToJavaBaseType(tp reflect.Type) string {
 	if tp.Kind() == reflect.Slice || tp.Kind() == reflect.Array {

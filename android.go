@@ -1,45 +1,31 @@
 package java
 
+/*
+#include <dlfcn.h>
+*/
+import "C"
 import (
 	"errors"
 	"github.com/aadog/go-ffi"
-	"github.com/aadog/go-gumjs"
 	"github.com/aadog/go-jni"
-	"github.com/samber/lo"
 	"github.com/samber/mo"
+	"runtime"
 	"unsafe"
 )
 
-var Android AndroidStruct
+var Jvm jni.VM
 
-type AndroidStruct struct {
-	Jvm                    jni.VM
-	Vm                     ffi.NativePointer
-	GlobalTable            ffi.NativePointer
-	GlobalTableMaxEntries_ ffi.NativePointer
-	GlobalLock             ffi.NativePointer
+func FindJNI_GetCreatedJavaVMs() ffi.NativePointer {
+	handle := C.dlopen(nil, C.RTLD_NOW)
+	JNI_GetCreatedJavaVMsPtr := C.dlsym(handle, (*C.char)(jni.CString("JNI_GetCreatedJavaVMs")))
+	C.dlclose(handle)
+	return ffi.Ptr(uintptr(JNI_GetCreatedJavaVMsPtr))
 }
 
-//	func (a AndroidStruct) PatchGlobalRef() {
-//		if unsafe.Sizeof(lo.ToPtr(1)) == 4 {
-//			Android.GlobalLock = Android.Vm.Add(32)
-//			Android.GlobalTable = Android.Vm.Add(72)
-//			panic(errors.New("没有计算，使用hexdump打印看一下位置"))
-//		} else {
-//			Android.GlobalLock = Android.Vm.Add(64)
-//			Android.GlobalTable = Android.Vm.Add(112)
-//			Android.GlobalTableMaxEntries_ = Android.GlobalTable.Add(3 * 16)
-//			LogError("Go", "%s", hex.Dump(Android.GlobalTable.ReadByteArray(500)))
-//
-//		}
-//		//Android.GlobalTableMaxEntries_.WriteU32(0xffffffff)
-//		//Android.GlobalTableMaxEntries_.WriteU32(100)
-//		Android.GlobalTableMaxEntries_.WriteSize(3048)
-//		LogError("Go", "%d", Android.GlobalTableMaxEntries_.ReadU32())
-//		LogError("Go", "%s", hex.Dump(Android.GlobalTable.ReadByteArray(500)))
-//	}
-func (a AndroidStruct) InitWithArtFind() mo.Result[struct{}] {
-	JNI_GetCreatedJavaVMsPtr := gumjs.Module.FindSymbolByName(lo.ToPtr("libart.so"), "JNI_GetCreatedJavaVMs")
+// InitWithArtFind 初始化jvm
+func InitWithArtFind() mo.Result[struct{}] {
+	//JNI_GetCreatedJavaVMsPtr := gumjs.Module.FindSymbolByName(lo.ToPtr("libart.so"), "JNI_GetCreatedJavaVMs")
+	JNI_GetCreatedJavaVMsPtr := FindJNI_GetCreatedJavaVMs()
 	if JNI_GetCreatedJavaVMsPtr.IsNull() {
 		return mo.Err[struct{}](errors.New("art find JNI_GetCreatedJavaVMs error"))
 	}
@@ -50,11 +36,18 @@ func (a AndroidStruct) InitWithArtFind() mo.Result[struct{}] {
 	if vmCount < 1 {
 		return mo.Err[struct{}](errors.New("vmcount <1"))
 	}
-	Android.Vm = ffi.Ptr(uintptr(unsafe.Pointer(vms)))
-	Android.Jvm = jni.VM(Android.Vm.ToUinptr())
-	//Android.init()
+	Jvm = jni.VM(unsafe.Pointer(vms))
 	return mo.Ok(struct{}{})
 }
-func (a AndroidStruct) init() {
-	//a.PatchGlobalRef()
+
+func Perform(fn func()) chan struct{} {
+	done := make(chan struct{})
+	go func() {
+		runtime.LockOSThread()
+		SetLocalThreadJavaEnv()
+		defer RemoveLocalThreadJavaEnv()
+		fn()
+		done <- struct{}{}
+	}()
+	return done
 }

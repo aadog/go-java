@@ -10,6 +10,7 @@ import (
 	"github.com/aadog/go-jni"
 	"github.com/samber/lo"
 	"github.com/samber/mo"
+	"reflect"
 	"runtime/debug"
 	"strings"
 	"sync"
@@ -17,7 +18,7 @@ import (
 )
 
 var Envs sync.Map
-var PrimitiveClasss = []string{
+var PrimitiveClasses = []string{
 	"byte", "short", "int", "long", "float", "double", "boolean", "char",
 }
 
@@ -38,7 +39,7 @@ func LocalThreadJavaEnv() jni.Env {
 	return env.(jni.Env)
 }
 func SetLocalThreadJavaEnv() {
-	env, ret := Android.Jvm.AttachCurrentThread()
+	env, ret := Jvm.AttachCurrentThread()
 	if ret != 0 {
 		panic(errors.New("attach current thread error"))
 	}
@@ -51,64 +52,73 @@ func SetLocalThreadJavaEnv() {
 func RemoveLocalThreadJavaEnv() {
 	threadID := CurrentThreadID()
 	Envs.Delete(threadID)
-	Android.Jvm.DetachCurrentThread()
+	Jvm.DetachCurrentThread()
 }
 
 var ClassWrapperCacheMap = sync.Map{}
 var lkClassWrapperMap = sync.Mutex{}
 
-func Use(className string) mo.Result[*ClassWrapper] {
+func Use(className string, skipCache bool) mo.Result[*Class] {
 	className = strings.ReplaceAll(className, ".", "/")
+
 	lkClassWrapperMap.Lock()
 	defer lkClassWrapperMap.Unlock()
-	loadClass, ok := ClassWrapperCacheMap.Load(className)
-	if ok {
-		return mo.Ok(loadClass.(*ClassWrapper))
+	if !skipCache {
+		loadClass, ok := ClassWrapperCacheMap.Load(className)
+		if ok {
+			return mo.Ok(loadClass.(*Class))
+		}
 	}
 	env := LocalThreadJavaEnv()
-
 	var cls jni.Jclass
-
-	if lo.Contains(PrimitiveClasss, className) {
+	if lo.Contains(PrimitiveClasses, className) {
 		var err error
 		//LogError("Go", "查找:%v", className)
 		cls, err = GetPrimitiveClass(className).Get()
 		//LogError("Go", "查找结果:%v", cls)
 		if err != nil {
-			return mo.Errf[*ClassWrapper]("find class error:%v", err)
+			return mo.Errf[*Class]("find class error:%v", err)
 		}
 		defer env.DeleteLocalRef(cls)
 	} else {
 		var err error
 		cls, err = env.FindClass(className).Get()
 		if err != nil {
-			return mo.Errf[*ClassWrapper]("find class error:%v", err)
+			return mo.Errf[*Class]("find class error:%v", err)
 		}
 		defer env.DeleteLocalRef(cls)
 	}
 	if cls == 0 {
 		if env.ExceptionCheck() {
-			return mo.Errf[*ClassWrapper](env.GetAndClearExceptionMessage())
+			return mo.Errf[*Class](env.GetAndClearExceptionMessage())
 		}
 	}
 
 	//所有class都使用GlobalRef,
-	clsWrapper := ClassWrapperWithJniPtr(env.NewGlobalRef(cls))
+	clsWrapper := JniObjectWithPtrAndNewGlobalRef[Class](cls)
 	ClassWrapperCacheMap.Store(className, clsWrapper)
 	return mo.Ok(clsWrapper)
 }
-func ForeUse(className string, cls jni.Jclass) mo.Result[*ClassWrapper] {
+func UseT[T any](className string, skipCache bool) mo.Result[*T] {
+	var t T
+	cls, err := Use(className, skipCache).Get()
+	if err != nil {
+		return mo.Err[*T](err)
+	}
+	_ = cls
+	vl := reflect.ValueOf(&t)
+	vl.Elem().FieldByName("Class").Set(reflect.ValueOf(cls))
+	return mo.Ok(&t)
+}
+func StoreClass(className string, cls jni.Jclass) {
 	className = strings.ReplaceAll(className, ".", "/")
 	lkClassWrapperMap.Lock()
 	defer lkClassWrapperMap.Unlock()
-	loadClass, ok := ClassWrapperCacheMap.Load(className)
+	_, ok := ClassWrapperCacheMap.Load(className)
 	if ok {
-		return mo.Ok(loadClass.(*ClassWrapper))
+		return
 	}
-	env := LocalThreadJavaEnv()
-
 	//所有class都使用GlobalRef,
-	clsWrapper := ClassWrapperWithJniPtr(env.NewGlobalRef(cls))
+	clsWrapper := JniObjectWithPtrAndNewGlobalRef[Class](cls)
 	ClassWrapperCacheMap.Store(className, clsWrapper)
-	return mo.Ok(clsWrapper)
 }
